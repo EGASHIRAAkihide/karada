@@ -1,69 +1,85 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { createClient } from "@/utils/supabase/client";
+
+// 1. Zodでフォームバリデーションスキーマを定義
+const LoginSchema = z.object({
+  email: z.string().email({ message: "正しいメールアドレスを入力してください" }),
+  password: z.string().min(6, { message: "パスワードは6文字以上で入力してください" }),
+});
+
+type LoginFormValues = z.infer<typeof LoginSchema>;
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const router = useRouter()
-  const supabase = createClientComponentClient()
+  const router = useRouter();
+  const supabase = createClient();
 
-  const handleLogin = async () => {
-    setError('')
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(LoginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = async (values: LoginFormValues) => {
+    const { email, password } = values;
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+
     if (error) {
-      setError(error.message)
-    } else {
-      router.push('/dashboard')
+      form.setError("email", { message: "ログインに失敗しました。メールアドレスまたはパスワードを確認してください。" });
+      return;
     }
-  }
+
+    router.push("/dashboard");
+  };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-xl text-center">ログイン</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">メールアドレス</label>
-            <Input
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">パスワード</label>
-            <Input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-          <Button onClick={handleLogin} className="w-full">
+    <div className="max-w-sm mx-auto py-10">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input placeholder="you@example.com" {...field} />
+                </FormControl>
+                <FormMessage /> {/* ここでエラー表示 */}
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input type="password" placeholder="••••••••" {...field} />
+                </FormControl>
+                <FormMessage /> {/* ここでエラー表示 */}
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit" className="w-full cursor-pointer">
             ログイン
           </Button>
-          <p className="text-center text-sm mt-2">
-            アカウントをお持ちでない方は{' '}
-            <a href="/signup" className="text-blue-600 underline">
-              登録はこちら
-            </a>
-          </p>
-        </CardContent>
-      </Card>
+
+        </form>
+      </Form>
     </div>
-  )
+  );
 }
