@@ -1,36 +1,149 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# karada v1 仕様書
 
-## Getting Started
+## 概要
 
-First, run the development server:
+**karada v1**は、パーソナルトレーナー向けの顧客管理とトレーニング記録管理のWebアプリです。  
+主にトレーナーが顧客情報を管理し、トレーニング記録を追跡・保存できるシンプルで直感的なツールです。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 目的
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- 顧客情報を一元管理し、トレーニングデータを簡単に記録・参照できる。
+- トレーナーの業務効率化を目指し、顧客に合わせたトレーニングプランの提供をサポート。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 機能概要
 
-To learn more about Next.js, take a look at the following resources:
+### 顧客管理機能
+1. **顧客一覧ページ**  
+   顧客の情報（名前、メールアドレス）を一覧で表示。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **顧客新規作成**  
+   名前やメールアドレスを入力して、新しい顧客を追加。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **顧客詳細ページ**  
+   顧客の詳細情報を表示。
 
-## Deploy on Vercel
+4. **顧客情報の編集・削除**  
+   顧客の情報を編集したり、顧客を削除。
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### トレーニング記録管理機能
+1. **トレーニング記録一覧**  
+   顧客ごとのトレーニング記録を日付順で表示。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. **トレーニング記録の新規作成**  
+   トレーニング日、種目、重量、回数などの情報を入力し、新しい記録を追加。
+
+3. **トレーニング記録の編集・削除**  
+   既存のトレーニング記録を編集・削除。
+
+---
+
+## DB設計
+
+### 顧客情報 (`clients`) テーブル
+| カラム   | 型     | 説明          |
+|----------|--------|---------------|
+| `id`     | UUID   | 顧客ID        |
+| `name`   | string | 顧客の名前    |
+| `email`  | string | 顧客のメールアドレス |
+
+### トレーニング記録 (`workouts`) テーブル
+| カラム     | 型     | 説明            |
+|------------|--------|-----------------|
+| `id`       | UUID   | 記録ID          |
+| `client_id`| UUID   | 顧客ID (関連する顧客) |
+| `date`     | date   | トレーニング日 |
+| `exercise` | string | トレーニング種目 |
+| `weight`   | number | 重量 (kg)       |
+| `reps`     | number | 回数 (reps)     |
+
+---
+
+## 画面構成
+
+1. **顧客一覧ページ (`/clients`)**  
+   顧客の一覧を表示。各顧客の名前をクリックすると顧客詳細ページに遷移。
+
+2. **顧客詳細ページ (`/clients/[id]`)**  
+   顧客の名前、メールアドレス、トレーニング記録のリストを表示。
+
+3. **顧客編集ページ (`/clients/[id]/edit`)**  
+   顧客情報（名前、メールアドレス）を編集するページ。
+
+4. **トレーニング記録一覧ページ (`/clients/[id]/workouts`)**  
+   顧客ごとのトレーニング記録を一覧表示。記録ごとに詳細を表示可能。
+
+5. **トレーニング記録追加ページ (`/clients/[id]/workouts/new`)**  
+   新しいトレーニング記録を追加するフォーム。
+
+---
+
+## 技術スタック
+
+### フロントエンド
+- **Next.js 15.3.1**（App Router）
+- **React**（バージョン 19）
+- **React Hook Form**（フォームのバリデーション）
+- **Tailwind CSS**（スタイリング）
+- **Zod**（フォームバリデーション）
+- **Lucide React**（アイコン表示）
+- **clsx**（動的クラス名の結合）
+
+### バックエンド
+- **Supabase**（データベース管理、認証）
+
+### 開発ツール
+- **TypeScript**（静的型付け）
+- **ESLint**（コードの静的解析）
+- **Prettier**（コード整形）
+- **Supabase CLI**（データベース操作）
+
+---
+
+## 開発環境
+
+### プロジェクト構成
+- `client`: Supabaseのクライアントをラップするカスタムユーティリティ。
+
+### スクリプト
+- **開発サーバー**: `npm run dev`
+- **ビルド**: `npm run build`
+- **本番サーバー起動**: `npm run start`
+- **Supabase関連**:
+  - `supabase:init`: Supabaseの初期化
+  - `supabase:start`: Supabaseのローカル開発サーバー起動
+  - `supabase:stop`: Supabaseのローカル開発サーバー停止
+  - `supabase:db-push`: Supabaseのデータベースマイグレーションを適用
+  - `supabase:db-pull`: Supabaseのデータベーススキーマを取得
+  - `supabase:db-reset`: データベースのリセット
+  - `supabase:db-seed`: サンプルデータを投入
+  - `supabase:db-setup`: 初期設定
+
+---
+
+## 今後の改善点・機能追加
+
+- **ユーザー認証**  
+  トレーナー専用の認証機能（ログイン、サインアップ）を追加。
+
+- **ダッシュボード機能**  
+  トレーニングの進捗や顧客のフィードバックを集計して表示するダッシュボードを追加。
+
+- **モバイル対応**  
+  レスポンシブデザインを改善し、モバイルユーザーへの対応を強化。
+
+- **トレーニングメニュー作成**  
+  トレーナーが顧客ごとのトレーニングプランを作成・編集できる機能。
+
+---
+
+## 運用環境
+
+- **デプロイ**: Vercel（Next.js専用のホスティング）
+- **データベース**: Supabase（PostgreSQL）
+- **バックアップ**: Supabaseが提供するバックアップ機能を利用
+
+---
