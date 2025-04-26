@@ -6,7 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "supabase:init": "supabase init",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:db-push": "supabase db push",
+    "supabase:db-pull": "supabase db pull",
+    "supabase:db-reset": "supabase db reset",
+    "supabase:db-seed": "supabase db seed",
+    "supabase:db-setup": "supabase db setup"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -33,6 +41,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.1",
+    "supabase": "^2.22.6",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.2.8",
     "typescript": "^5"

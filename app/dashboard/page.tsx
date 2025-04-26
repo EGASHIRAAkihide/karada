@@ -24,12 +24,11 @@ export default function DashboardPage() {
       <h1 className="text-3xl font-bold">Dashboard</h1>
       
       <div className="space-y-4">
-        <p><strong>名前:</strong> {userProfile?.name || "名前未設定"}</p>
-        <p><strong>Email:</strong> {userProfile?.email}</p>
-        <p><strong>会員ID:</strong> {userProfile?.id}</p>
+        <p><strong>Email:</strong> {userProfile?.email || "メールアドレス未設定"}</p>
+        <p><strong>会員ID:</strong> {userProfile?.id || "会員id未登録"}</p>
       </div>
 
-      <Button onClick={handleLogout}>サインアウト</Button>
+      <Button onClick={handleLogout} className="cursor-pointer">サインアウト</Button>
     </div>
   );
 }
