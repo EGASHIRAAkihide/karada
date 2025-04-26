@@ -43,7 +43,8 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="max-w-sm mx-auto py-10">
+    <div className="max-w-sm mx-auto py-10 flex flex-col gap-8">
+      <h1 className="font-bold text-xl text-center">Signup</h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           
