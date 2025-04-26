@@ -31,7 +31,9 @@ export default function SignupPage() {
 
   const onSubmit = async (values: SignupFormValues) => {
     const { email, password } = values;
-    const { error } = await supabase.auth.signUp({ email, password });
+
+    // Supabaseでサインアップ
+    const { data, error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
       // Supabaseエラーをフォームに表示
@@ -39,7 +41,10 @@ export default function SignupPage() {
       return;
     }
 
-    router.push("/dashboard"); // 登録成功後に遷移
+    console.log("サインアップ成功:", data);
+
+    // サインアップ成功後、プロファイル情報はトリガーで自動登録されるので、ここではやらない
+    router.push("/dashboard"); // 登録後にダッシュボードにリダイレクト
   };
 
   return (
@@ -76,7 +81,7 @@ export default function SignupPage() {
             )}
           />
 
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full cursor-pointer">
             サインアップ
           </Button>
 

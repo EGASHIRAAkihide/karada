@@ -1,42 +1,33 @@
 "use client";
 
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { createClient } from "@/utils/supabase/client";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 export default function DashboardPage() {
+  const { loading: authLoading } = useAuthRedirect();
+  const { userProfile, loading: profileLoading } = useUserProfile();
   const supabase = createClient();
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        router.push("/login");
-      } else {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [router, supabase]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push("/login");
+    window.location.href = "/login";
   };
 
-  if (loading) {
+  if (authLoading || profileLoading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 
   return (
     <div className="max-w-2xl mx-auto py-20 space-y-6 text-center">
       <h1 className="text-3xl font-bold">Dashboard</h1>
-      <p>ここはログイン後に表示されるダッシュボードです。</p>
+      
+      <div className="space-y-4">
+        <p><strong>Email:</strong> {userProfile?.email || "メールアドレス未設定"}</p>
+        <p><strong>会員ID:</strong> {userProfile?.id || "会員id未登録"}</p>
+      </div>
+
       <Button onClick={handleLogout} className="cursor-pointer">サインアウト</Button>
     </div>
   );
