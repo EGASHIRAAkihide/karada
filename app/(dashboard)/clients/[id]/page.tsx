@@ -30,9 +30,15 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
         <p><span className="font-semibold">メールアドレス:</span> {client.email}</p>
       </div>
 
-      <Button asChild className="w-full max-w-[120px] mt-6">
-        <Link href={`/clients/${client.id}/edit/`}>編集する</Link>
-      </Button>
+      <div className="flex gap-2">
+        <Button asChild className="w-full max-w-[120px] mt-6">
+          <Link href={`/clients/${client.id}/edit/`}>編集する</Link>
+        </Button>
+
+        <Button asChild className="w-full max-w-[120px] mt-6">
+          <Link href={`/clients/${client.id}/workouts/`}>workouts</Link>
+        </Button>
+      </div>
     </div>
   );
 }
