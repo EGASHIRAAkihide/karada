@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
 import { Textarea } from "@/components/ui/textarea";
+import { use } from "react";
 
 const WorkoutSchema = z.object({
   date: z.string().min(1, { message: "日付を入力してください" }),
@@ -19,7 +20,7 @@ const WorkoutSchema = z.object({
 
 type WorkoutFormValues = z.infer<typeof WorkoutSchema>;
 
-export default function NewWorkoutPage({ params }: { params: { id: string } }) {
+export default function NewWorkoutPage({ params }: { params: Promise<{ id: string; workoutId: string }> }) {
   const router = useRouter();
   const supabase = createClient();
 
@@ -33,6 +34,9 @@ export default function NewWorkoutPage({ params }: { params: { id: string } }) {
     },
   });
 
+  const resolvedParams = use(params);
+  const { id } = resolvedParams;
+
   const onSubmit = async (values: WorkoutFormValues) => {
     const { date, exercise_name, sets_reps_weight, notes } = values;
 
@@ -43,7 +47,7 @@ export default function NewWorkoutPage({ params }: { params: { id: string } }) {
         exercise_name,
         sets_reps_weight,
         notes,
-        client_id: params.id,
+        client_id: id,
       });
 
     if (error) {
@@ -51,8 +55,7 @@ export default function NewWorkoutPage({ params }: { params: { id: string } }) {
       return;
     }
 
-    // 登録後、一覧ページにリダイレクト
-    router.push(`/clients/${params.id}/workouts`);
+    router.push(`/clients/${id}/workouts`);
   };
 
   return (

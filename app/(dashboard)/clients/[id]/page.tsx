@@ -10,7 +10,7 @@ type Client = {
 };
 
 export default async function ClientDetailPage({ params }: { params: { id: string } }) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: client, error } = await supabase
     .from("clients")
