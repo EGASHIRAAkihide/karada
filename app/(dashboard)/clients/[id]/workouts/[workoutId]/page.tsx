@@ -3,13 +3,16 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
-export default async function WorkoutDetailPage({ params }: { params: { id: string; workoutId: string } }) {
-  const supabase = await createClient();
+export default async function WorkoutDetailPage({ params }: { params: Promise<{ id: string; workoutId: string }> }) {
+  const supabase = createClient();
+
+  const resolvedParams = await params; // ★★★ Promiseをawaitして中身を取り出す！
+  const { id, workoutId } = resolvedParams;
 
   const { data: workout, error } = await supabase
     .from('workouts')
     .select('*')
-    .eq('id', params.workoutId)
+    .eq('id', workoutId)
     .single();
 
   if (error || !workout) {
@@ -19,9 +22,8 @@ export default async function WorkoutDetailPage({ params }: { params: { id: stri
 
   async function handleDelete() {
     "use server";
-    const supabase = await createClient();
-    await supabase.from('workouts').delete().eq('id', params.workoutId);
-    redirect(`/clients/${params.id}/workouts`);
+    await supabase.from('workouts').delete().eq('id', workoutId);
+    redirect(`/clients/${id}/workouts`);
   }
 
   return (
@@ -35,7 +37,7 @@ export default async function WorkoutDetailPage({ params }: { params: { id: stri
       </div>
 
       <div className="flex space-x-2 mt-6">
-        <Link href={`/clients/${params.id}/workouts/${params.workoutId}/edit`}>
+        <Link href={`/clients/${id}/workouts/${workoutId}/edit`}>
           <Button>編集</Button>
         </Link>
         <form action={handleDelete}>

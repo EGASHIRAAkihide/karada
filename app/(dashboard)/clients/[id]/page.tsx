@@ -9,13 +9,16 @@ type Client = {
   email: string;
 };
 
-export default async function ClientDetailPage({ params }: { params: { id: string } }) {
-  const supabase = await createClient();
+export default async function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const supabase = createClient();
+
+  const resolvedParams = await params; // ★★★ Promiseをawaitして中身を取り出す！
+  const { id } = resolvedParams;
 
   const { data: client, error } = await supabase
     .from("clients")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single<Client>();
 
   if (error || !client) {
