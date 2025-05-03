@@ -8,6 +8,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
+import { logActivity } from "@/lib/logActivity";
 
 // 1. Zodでバリデーションルールを定義
 const ClientSchema = z.object({
@@ -31,17 +32,24 @@ export default function NewClientPage() {
 
   const onSubmit = async (values: ClientFormValues) => {
     const { name, email } = values;
-
-    const { error } = await supabase
+  
+    const { data, error } = await supabase
       .from("clients")
-      .insert({ name, email });
-
+      .insert({ name, email })
+      .select()
+      .single();
+  
     if (error) {
       form.setError("name", { message: error.message || "登録に失敗しました" });
       return;
     }
-
-    // 登録後、一覧ページにリダイレクト
+  
+    await logActivity("クライアント追加", "clients", {
+      name,
+      email,
+      clientId: data.id,
+    });
+  
     router.push("/clients");
   };
 

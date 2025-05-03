@@ -8,6 +8,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
+import { logActivity } from "@/lib/logActivity";
 
 // 1. Zodでフォームバリデーションスキーマを定義
 const LoginSchema = z.object({
@@ -37,6 +38,10 @@ export default function LoginPage() {
       form.setError("email", { message: "ログインに失敗しました。メールアドレスまたはパスワードを確認してください。" });
       return;
     }
+
+    await logActivity("ログイン", "auth", {
+      email,
+    });
 
     router.push("/dashboard");
   };
