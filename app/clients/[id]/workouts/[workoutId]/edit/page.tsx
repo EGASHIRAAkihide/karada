@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { use, useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { toast } from "sonner";
 
 const EditWorkoutSchema = z.object({
   date: z.string().min(1, { message: "日付を入力してください" }),
@@ -74,10 +75,12 @@ export default function EditWorkoutPage({ params }: { params: Promise<{ id: stri
       .eq("id", workoutId);
 
     if (error) {
+      toast.error("ワークアウトの更新に失敗しました");
       console.error(error);
       return;
     }
 
+    toast.success("ワークアウトを更新しました");
     router.push(`/clients/${id}/workouts/${workoutId}`);
   };
 

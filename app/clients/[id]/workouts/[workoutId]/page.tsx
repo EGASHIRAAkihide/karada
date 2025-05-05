@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export default async function WorkoutDetailPage({ params }: { params: Promise<{ id: string; workoutId: string }> }) {
   const supabase = createClient();
@@ -23,6 +24,7 @@ export default async function WorkoutDetailPage({ params }: { params: Promise<{ 
   async function handleDelete() {
     "use server";
     await supabase.from('workouts').delete().eq('id', workoutId);
+    toast.success('ワークアウトを削除しました');
     redirect(`/clients/${id}/workouts`);
   }
 

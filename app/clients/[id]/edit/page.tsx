@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { use, useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { toast } from "sonner";
 
 const EditClientSchema = z.object({
   name: z.string().min(1, { message: "名前を入力してください" }),
@@ -35,8 +36,7 @@ export default function Page({ params }: { params: Promise<{ id: string; workout
 
   useEffect(() => {
     const fetchClient = async () => {
-      // Ensure params.id is unwrapped by using React.use()
-      const paramId = await id;  // Await params.id to get the resolved value
+      const paramId = await id; 
       if (!paramId) {
         return;
       }
@@ -49,6 +49,7 @@ export default function Page({ params }: { params: Promise<{ id: string; workout
 
       if (error) {
         console.error(error);
+        toast.error("クライアント情報の取得に失敗しました");
         return;
       }
 
@@ -72,10 +73,12 @@ export default function Page({ params }: { params: Promise<{ id: string; workout
       .eq("id", id); // Use params.id as awaited value
 
     if (error) {
+      toast.error("クライアントの更新に失敗しました");
       console.error(error);
       return;
     }
 
+    toast.success("クライアントを更新しました");
     router.push("/clients");
   };
 

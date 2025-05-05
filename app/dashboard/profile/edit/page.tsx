@@ -1,83 +1,92 @@
 "use client";
 
-import { useEffect } from "react";
+import { use, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useUserProfile } from "@/hooks/useUserProfile";
-import { createClient } from "@/utils/supabase/client";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { toast } from "sonner";
+import { createClient } from "@/utils/supabase/client";
 
-// Zodスキーマ定義
 const ProfileSchema = z.object({
-  name: z.string().min(1, "ユーザー名は必須です"),
-  email: z.string().email("有効なメールアドレスを入力してください"),
+  name: z.string().min(1, { message: "ユーザー名は必須です" }),
+  email: z.string().email({ message: "有効なメールアドレスを入力してください" }),
   role: z.enum(["admin", "user"]),
 });
 
 type ProfileFormValues = z.infer<typeof ProfileSchema>;
 
 export default function ProfilePage() {
-  const { userProfile, loading } = useUserProfile();
+  const router = useRouter();
   const supabase = createClient();
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(ProfileSchema),
     defaultValues: {
-      name: userProfile?.name || "",
-      email: userProfile?.email || "",
-      role: userProfile?.role || "user",
+      name: "",
+      email: "",
+      role: "user",
     },
   });
 
   useEffect(() => {
-    if (userProfile) {
-      form.reset({
-        name: userProfile.name,
-        email: userProfile.email,
-        role: userProfile.role,
-      });
-    }
-  }, [userProfile, form]);
+    const fetchProfile = async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user?.user?.id) return;
+  
+      setUserId(user.user.id); // ユーザーIDを保存
+  
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("name, email, role")
+        .eq("id", user.user.id)
+        .single();
 
-  const updateProfile = async (values: ProfileFormValues) => {
+      if (error) {
+        console.error(error);
+        toast.error("クライアント情報の取得に失敗しました");
+        return;
+      }
+  
+      if (data) {
+        form.reset({
+          name: data.name,
+          email: data.email,
+          role: data.role,
+        });
+      }
+
+      console.log("Updated data:", data);
+      setLoading(false);
+    };
+  
+    fetchProfile();
+  }, [supabase, form]);
+  
+  const onSubmit = async (values: ProfileFormValues) => {
+    if (!userId) return; // 念のためnullチェック
+  
+    const { name, email, role } = values;
+  
     const { error } = await supabase
       .from("profiles")
-      .update({
-        name: values.name,
-        email: values.email,
-        role: values.role,
-      })
-      .eq("id", userProfile?.id);
-
+      .update({ name, email, role })
+      .eq("id", userId);
+  
     if (error) {
-      throw new Error(error.message);
+      toast.error("プロフィールの更新に失敗しました");
+      console.error(error);
+      return;
     }
-  };
-
-  const onSubmit = async (values: ProfileFormValues) => {
-    try {
-      await updateProfile(values);
-      alert("プロフィールを更新しました！");
-    } catch (error) {
-      alert("更新に失敗しました");
-    }
+  
+    toast.success("プロフィールを更新しました！");
+    router.push("/dashboard/profile");
   };
 
   if (loading) return <p className="text-center mt-10">読み込み中...</p>;
@@ -87,6 +96,7 @@ export default function ProfilePage() {
       <h1 className="font-bold text-xl text-center">プロフィール編集</h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+
           <FormField
             control={form.control}
             name="name"
@@ -100,6 +110,7 @@ export default function ProfilePage() {
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="email"
@@ -113,6 +124,7 @@ export default function ProfilePage() {
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="role"
@@ -134,6 +146,7 @@ export default function ProfilePage() {
               </FormItem>
             )}
           />
+
           <Button type="submit" className="w-full">
             保存する
           </Button>
