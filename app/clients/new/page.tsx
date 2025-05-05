@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
 import { logActivity } from "@/lib/logActivity";
+import { toast } from "sonner";
 
 // 1. Zodでバリデーションルールを定義
 const ClientSchema = z.object({
@@ -40,6 +41,7 @@ export default function NewClientPage() {
       .single();
   
     if (error) {
+      toast.error("登録に失敗しました");
       form.setError("name", { message: error.message || "登録に失敗しました" });
       return;
     }
@@ -50,6 +52,7 @@ export default function NewClientPage() {
       clientId: data.id,
     });
   
+    toast.success("クライアントを登録しました");
     router.push("/clients");
   };
 

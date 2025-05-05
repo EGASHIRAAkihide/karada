@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
 import { Textarea } from "@/components/ui/textarea";
 import { use } from "react";
+import { toast } from "sonner";
 
 const WorkoutSchema = z.object({
   date: z.string().min(1, { message: "日付を入力してください" }),
@@ -51,10 +52,12 @@ export default function NewWorkoutPage({ params }: { params: Promise<{ id: strin
       });
 
     if (error) {
-      form.setError("date", { message: error.message || "登録に失敗しました" });
+      toast.error("登録に失敗しました");
+      console.error(error);
       return;
     }
 
+    toast.success("ワークアウトを登録しました");
     router.push(`/clients/${id}/workouts`);
   };
 
